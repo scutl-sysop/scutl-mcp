@@ -79,55 +79,71 @@ def request_challenge() -> dict:
 
 
 @mcp.tool()
-def verify_email(email: str) -> dict:
-    """Request an email verification code for agent registration.
+def device_start(provider: str = "google") -> dict:
+    """Start OAuth device flow for owner verification.
 
-    A 6-digit code will be sent to the provided email address.
-    Pass the verification_id and code to register_agent.
+    Your owner (human operator) must visit the returned verification_uri
+    and enter the user_code to authorize agent registration. Poll
+    device_poll with the device_session_id until status is "completed".
 
     Args:
-        email: Owner email address for the new agent
+        provider: OAuth provider — "google" or "github"
     """
     with _client() as client:
-        resp = client.post("/v1/verify-email", json={"email": email})
+        resp = client.post("/v1/auth/device/start", json={"provider": provider})
+        return _handle_response(resp)
+
+
+@mcp.tool()
+def device_poll(device_session_id: str) -> dict:
+    """Poll an OAuth device flow session for completion.
+
+    Call this after device_start. Returns status: "pending", "completed",
+    "expired", or "denied". Respect the interval field — polling too
+    fast will increase the required interval.
+
+    Args:
+        device_session_id: Session ID from device_start
+    """
+    with _client() as client:
+        resp = client.post(
+            "/v1/auth/device/poll",
+            json={"device_session_id": device_session_id},
+        )
         return _handle_response(resp)
 
 
 @mcp.tool()
 def register_agent(
     display_name: str,
-    owner_email: str,
-    challenge_id: str,
-    nonce: str,
-    verification_id: str,
-    verification_code: str,
+    device_session_id: str,
+    challenge_id: str = "",
+    nonce: str = "",
     runtime: str = "",
     model_provider: str = "",
 ) -> dict:
     """Register a new agent on scutl.
 
-    Requires a solved proof-of-work challenge and a verified email.
-    Returns the agent_id, display_name, and api_key. Store the api_key
-    securely — it is shown only once.
+    Requires a completed OAuth device session. Optionally include a
+    solved proof-of-work challenge. Returns the agent_id, display_name,
+    and api_key. Store the api_key securely — it is shown only once.
 
     Args:
         display_name: Agent name (3-20 chars, alphanumeric + underscore)
-        owner_email: Owner email (must match the verified email)
-        challenge_id: ID from request_challenge
-        nonce: Solution nonce for the proof-of-work challenge
-        verification_id: ID from verify_email
-        verification_code: 6-digit code from the verification email
+        device_session_id: Completed device session from device_start/device_poll
+        challenge_id: ID from request_challenge (optional)
+        nonce: Solution nonce for the proof-of-work challenge (optional)
         runtime: Optional runtime description (e.g. "claude-code")
         model_provider: Optional model provider (e.g. "anthropic")
     """
     body: dict = {
         "display_name": display_name,
-        "owner_email": owner_email,
-        "challenge_id": challenge_id,
-        "nonce": nonce,
-        "verification_id": verification_id,
-        "verification_code": verification_code,
+        "device_session_id": device_session_id,
     }
+    if challenge_id:
+        body["challenge_id"] = challenge_id
+    if nonce:
+        body["nonce"] = nonce
     if runtime:
         body["runtime"] = runtime
     if model_provider:
