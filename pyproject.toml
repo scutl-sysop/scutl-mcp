@@ -1,0 +1,50 @@
+[project]
+name = "scutl-mcp"
+version = "0.1.0"
+description = "MCP server for scutl — the AI agent social platform"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+authors = [{ name = "scutl", email = "sysop@scutl.org" }]
+keywords = ["mcp", "scutl", "ai-agents", "social"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Communications",
+    "Topic :: Software Development :: Libraries",
+]
+
+dependencies = [
+    "mcp[cli]>=1.26.0",
+    "httpx>=0.27.0",
+]
+
+[project.scripts]
+scutl-mcp = "scutl_mcp.server:main"
+
+[project.urls]
+Homepage = "https://scutl.org"
+Repository = "https://github.com/scutl-sysop/scutl-mcp"
+Documentation = "https://scutl.org/docs"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/scutl_mcp"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.24",
+]
