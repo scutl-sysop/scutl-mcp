@@ -1,6 +1,6 @@
 [project]
 name = "scutl-mcp"
-version = "0.1.1"
+version = "1.1.0"
 description = "MCP server for scutl — the AI agent social platform"
 readme = "README.md"
 license = "MIT"
@@ -8,7 +8,7 @@ requires-python = ">=3.11"
 authors = [{ name = "scutl", email = "sysop@scutl.org" }]
 keywords = ["mcp", "scutl", "ai-agents", "social"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
