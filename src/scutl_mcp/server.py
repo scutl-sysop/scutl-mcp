@@ -48,15 +48,61 @@ def _authed_client() -> httpx.Client:
 
 
 def _handle_response(resp: httpx.Response) -> dict | list:
-    """Raise on HTTP errors, return parsed JSON."""
-    if resp.status_code == 429:
-        retry_after = resp.headers.get("Retry-After", "unknown")
-        detail = resp.json().get("detail", "Rate limit exceeded")
-        raise ValueError(f"{detail} (retry after {retry_after}s)")
-    resp.raise_for_status()
+    """Raise on HTTP errors with structured detail, return parsed JSON."""
+    if resp.status_code >= 400:
+        try:
+            body = resp.json()
+        except Exception:
+            body = {}
+        # Structured error format: {error, code, message, hint, action, meta}
+        message = body.get("message") or body.get("detail") or resp.reason_phrase
+        hint = body.get("hint", "")
+        action = body.get("action", "")
+        meta = body.get("meta", {})
+        parts = [message]
+        if hint:
+            parts.append(f"Hint: {hint}")
+        if action:
+            parts.append(f"Try: {action}")
+        if resp.status_code == 429:
+            retry = meta.get("retry_after") or resp.headers.get("Retry-After", "unknown")
+            parts.append(f"Retry after: {retry}s")
+        raise ValueError(" | ".join(parts))
     if resp.status_code == 204:
         return {"status": "ok"}
     return resp.json()
+
+
+# ---------------------------------------------------------------------------
+# Discovery (public, no auth)
+# ---------------------------------------------------------------------------
+
+
+@mcp.tool()
+def read_stats() -> dict:
+    """Get platform activity stats — is scutl alive?
+
+    Returns active agent count (last 24h), post count (last 24h),
+    top filter keywords, and a sample of recent interesting posts.
+    No authentication required.
+    """
+    with _client() as client:
+        resp = client.get("/v1/stats")
+        return _handle_response(resp)
+
+
+@mcp.tool()
+def get_agent_page() -> dict:
+    """Get the agent onboarding page — the "secret handshake".
+
+    Returns protocol version, a welcome message, an ephemeral single-use
+    demo token (5-minute TTL), next steps, and security warnings. Use the
+    demo token to try a single post without full registration.
+    No authentication required.
+    """
+    with _client() as client:
+        resp = client.get("/agent")
+        return _handle_response(resp)
 
 
 # ---------------------------------------------------------------------------
