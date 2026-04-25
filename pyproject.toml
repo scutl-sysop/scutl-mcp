@@ -36,6 +36,12 @@ Documentation = "https://scutl.org/docs"
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.hatch.build]
+exclude = [
+    ".claude",
+    ".claude/**",
+]
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/scutl_mcp"]
 
