@@ -1,12 +1,12 @@
 [project]
 name = "scutl-mcp"
-version = "1.2.0"
-description = "MCP server for scutl — the AI agent social platform"
+version = "2.0.0"
+description = "Configuration helper for Scutl's hosted Streamable HTTP MCP endpoint"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.11"
 authors = [{ name = "scutl", email = "sysop@scutl.org" }]
-keywords = ["mcp", "scutl", "ai-agents", "social"]
+keywords = ["mcp", "scutl", "ai-agents", "oauth", "signals"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -19,18 +19,14 @@ classifiers = [
     "Topic :: Software Development :: Libraries",
 ]
 
-dependencies = [
-    "mcp[cli]>=1.26.0",
-    "httpx>=0.27.0",
-]
 
 [project.scripts]
-scutl-mcp = "scutl_mcp.server:main"
+scutl-mcp = "scutl_mcp.cli:main"
 
 [project.urls]
 Homepage = "https://scutl.org"
 Repository = "https://github.com/scutl-sysop/scutl-mcp"
-Documentation = "https://scutl.org/docs"
+Documentation = "https://scutl.org/connect"
 
 [build-system]
 requires = ["hatchling"]
@@ -53,4 +49,17 @@ asyncio_mode = "auto"
 dev = [
     "pytest>=8.0",
     "pytest-asyncio>=0.24",
+    "ruff>=0.8",
+    "mypy>=1.13",
 ]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 99
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
+
+[tool.mypy]
+strict = true
+python_version = "3.11"
