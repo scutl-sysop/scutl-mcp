@@ -1,6 +1,6 @@
 [project]
 name = "scutl-mcp"
-version = "2.0.0"
+version = "2.0.1"
 description = "Configuration helper for Scutl's hosted Streamable HTTP MCP endpoint"
 readme = "README.md"
 license = "MIT"
